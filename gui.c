@@ -288,7 +288,8 @@ static void on_list_users(GtkWidget *widget, gpointer data) {
     gtk_window_set_child(GTK_WINDOW(window), box);
 
     GtkWidget *scrolled_window = gtk_scrolled_window_new();
-    gtk_box_pack_start(GTK_BOX(box), scrolled_window, TRUE, TRUE, 0);
+    gtk_box_append(GTK_BOX(box), scrolled_window);
+
 
     GtkWidget *text_view = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view), FALSE);
@@ -328,7 +329,8 @@ static void on_list_groups(GtkWidget *widget, gpointer data) {
     gtk_window_set_child(GTK_WINDOW(window), box);
 
     GtkWidget *scrolled_window = gtk_scrolled_window_new();
-    gtk_box_pack_start(GTK_BOX(box), scrolled_window, TRUE, TRUE, 0); // Expand scrolled window
+    gtk_box_append(GTK_BOX(box), scrolled_window);
+
 
     GtkWidget *text_view = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view), FALSE);
