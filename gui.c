@@ -262,89 +262,73 @@ static void on_delete_user_from_group(GtkWidget *widget, gpointer data) {
     gtk_window_present(GTK_WINDOW(window));
 }
 
+
 static void on_list_users(GtkWidget *widget, gpointer data) {
-    const char *command = "cut -d: -f1 /etc/passwd";
-    char users[2048];
-    FILE *fp = popen(command, "r");
-    if (fp == NULL) {
+    FILE *fp = popen("cut -d: -f1 /etc/passwd", "r");
+    if (!fp) {
         perror("popen");
         return;
     }
 
-    memset(users, 0, sizeof(users));
-
-    size_t i = 0;
-    while (fgets(users + i, sizeof(users) - i, fp) != NULL) {
-        i = strlen(users);
-    }
-
-    fclose(fp);
-
     GtkWidget *window = gtk_window_new();
-    gtk_window_set_title(GTK_WINDOW(window), "Users List");
-    gtk_window_set_default_size(GTK_WINDOW(window), 600, 400);
+    gtk_window_set_title(GTK_WINDOW(window), "Users");
+    gtk_window_set_default_size(GTK_WINDOW(window), 400, 600);
+
+    GtkWidget *scrolled = gtk_scrolled_window_new();
+    gtk_window_set_child(GTK_WINDOW(window), scrolled);
 
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_window_set_child(GTK_WINDOW(window), box);
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled), box);
 
-    GtkWidget *scrolled_window = gtk_scrolled_window_new();
-    gtk_box_append(GTK_BOX(box), scrolled_window);
+    char line[256];
+    while (fgets(line, sizeof(line), fp)) {
+        line[strcspn(line, "\n")] = 0; 
+        GtkWidget *button = gtk_button_new_with_label(line);
+        gtk_box_append(GTK_BOX(box), button);
+    }
 
-
-    GtkWidget *text_view = gtk_text_view_new();
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view), FALSE);
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view), GTK_WRAP_NONE);
-    gtk_text_view_set_pixels_above_lines(GTK_TEXT_VIEW(text_view), 5);
-    gtk_text_view_set_pixels_below_lines(GTK_TEXT_VIEW(text_view), 5);
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), text_view);
-
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    gtk_text_buffer_set_text(buffer, users, -1);
-
+    pclose(fp);
     gtk_window_present(GTK_WINDOW(window));
 }
+
 static void on_list_groups(GtkWidget *widget, gpointer data) {
-    const char *command = "getent group";
-    char groups[2048];
-    FILE *fp = popen(command, "r");
-    if (fp == NULL) {
+    FILE *fp = popen("getent group", "r");
+    if (!fp) {
         perror("popen");
         return;
     }
 
-    memset(groups, 0, sizeof(groups));
-
-    size_t i = 0;
-    while (fgets(groups + i, sizeof(groups) - i, fp) != NULL) {
-        i = strlen(groups);
-    }
-
-    fclose(fp);
-
     GtkWidget *window = gtk_window_new();
-    gtk_window_set_title(GTK_WINDOW(window), "Groups List");
-    gtk_window_set_default_size(GTK_WINDOW(window), 600, 400);
+    gtk_window_set_title(GTK_WINDOW(window), "Groups");
+    gtk_window_set_default_size(GTK_WINDOW(window), 400, 600);
 
-    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_window_set_child(GTK_WINDOW(window), box);
-
-    GtkWidget *scrolled_window = gtk_scrolled_window_new();
-    gtk_box_append(GTK_BOX(box), scrolled_window);
-
+    GtkWidget *scrolled = gtk_scrolled_window_new();
+    gtk_window_set_child(GTK_WINDOW(window), scrolled);
 
     GtkWidget *text_view = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view), FALSE);
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view), GTK_WRAP_NONE);
-    gtk_text_view_set_pixels_above_lines(GTK_TEXT_VIEW(text_view), 5);
-    gtk_text_view_set_pixels_below_lines(GTK_TEXT_VIEW(text_view), 5);
-    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), text_view);
+    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(text_view), FALSE);
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled), text_view);
 
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    gtk_text_buffer_set_text(buffer, groups, -1);
 
+    char line[512];
+    GString *group_text = g_string_new(NULL);
+
+    while (fgets(line, sizeof(line), fp)) {
+        line[strcspn(line, "\n")] = 0;
+        char *groupname = strtok(line, ":");
+        if (groupname) {
+            g_string_append_printf(group_text, "%s\n", groupname);
+        }
+    }
+
+    gtk_text_buffer_set_text(buffer, group_text->str, -1);
+
+    g_string_free(group_text, TRUE);
+    pclose(fp);
     gtk_window_present(GTK_WINDOW(window));
 }
-
 
 static void on_exit_clicked(GtkWidget *widget, gpointer data) {
     exit(0);
