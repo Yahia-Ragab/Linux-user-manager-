@@ -144,7 +144,6 @@ static void on_change_user_info(GtkWidget *widget, gpointer data) {
 
     GtkWidget *entry_password = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(entry_password), "Enter new username");
-    gtk_entry_set_visibility(GTK_ENTRY(entry_password), FALSE);
     gtk_box_append(GTK_BOX(box), entry_password);
 
     GtkWidget **entries = g_new(GtkWidget *, 2);
@@ -178,7 +177,6 @@ static void on_change_account_info(GtkWidget *widget, gpointer data) {
 
     GtkWidget *entry_password = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(entry_password), "Enter days until password expiration");
-    gtk_entry_set_visibility(GTK_ENTRY(entry_password), FALSE);
     gtk_box_append(GTK_BOX(box), entry_password);
 
     GtkWidget **entries = g_new(GtkWidget *, 2);
@@ -213,7 +211,6 @@ static void on_assign_user_to_group(GtkWidget *widget, gpointer data) {
 
     GtkWidget *entry_password = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(entry_password), "Enter group name");
-    gtk_entry_set_visibility(GTK_ENTRY(entry_password), FALSE);
     gtk_box_append(GTK_BOX(box), entry_password);
 
     GtkWidget **entries = g_new(GtkWidget *, 2);
@@ -248,7 +245,6 @@ static void on_delete_user_from_group(GtkWidget *widget, gpointer data) {
 
     GtkWidget *entry_password = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(entry_password), "Enter group name");
-    gtk_entry_set_visibility(GTK_ENTRY(entry_password), FALSE);
     gtk_box_append(GTK_BOX(box), entry_password);
 
     GtkWidget **entries = g_new(GtkWidget *, 2);
@@ -316,11 +312,7 @@ static void on_list_groups(GtkWidget *widget, gpointer data) {
     GString *group_text = g_string_new(NULL);
 
     while (fgets(line, sizeof(line), fp)) {
-        line[strcspn(line, "\n")] = 0;
-        char *groupname = strtok(line, ":");
-        if (groupname) {
-            g_string_append_printf(group_text, "%s\n", groupname);
-        }
+        g_string_append_printf(group_text, "%s", line);
     }
 
     gtk_text_buffer_set_text(buffer, group_text->str, -1);
@@ -333,6 +325,9 @@ static void on_list_groups(GtkWidget *widget, gpointer data) {
 static void on_exit_clicked(GtkWidget *widget, gpointer data) {
     exit(0);
 }
+
+
+
 
 static void show_main_window(GtkApplication *app) {
     GtkWidget *window = gtk_application_window_new(app);
